@@ -3,3 +3,13 @@
 /page_content.txt
 /session.json
 /venv
+.env
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env.*
+.vscode/
+playwright-report/
+output/
+*.log
