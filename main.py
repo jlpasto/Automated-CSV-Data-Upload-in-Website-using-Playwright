@@ -412,7 +412,7 @@ def fill_supplier_form(page, record):
     page.fill("input[name='office_phone_1']", record.get("Office Phone 1", ""))
     page.fill("input[name='office_phone_2']", record.get("Office Phone 2", ""))
     page.fill("input[name='website_url']", record.get("Website URL", "https://tourdevines.com.au/"))
-        
+
     # Add more mappings as needed
     page.click("button[name='_submit']")
     page.wait_for_load_state("networkidle")
@@ -459,10 +459,7 @@ def fill_manifest_fields(page, manifest_data):
 
 def main():
     records = csv_to_json_list(CSV_FILE_PATH)
-    manifest_json = '''
-    {"Gender": "Yes","Date of Birth": "No","Weight": "No","Medical Information": "No","Age": "No","Height": "No","Dietary Requirements": "Yes","Full Address": "No","Contact Phone": "Yes","Passport Information": "No","Guide Notes": "No","Contact Email": "No","Emergency Contacts": "No","Insurance Detail": "No","Is Upgrade": "No","Unit Number": "No","Show Internal Rate Name": "No","Duration": "No","Include Package Name": "No","Tour Extras": "No","Include Sub Tours": "No","Meeting Points": "No","Insurance Policy": "No"}
-    '''
-    manifest_data = json.loads(manifest_json)
+ 
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=False, slow_mo=1000)
         try:
@@ -488,7 +485,7 @@ def main():
                 page.goto(manifest_setup_url)
                 page.wait_for_load_state("networkidle")
                 page.click("button#select-all")
-                fill_manifest_fields(page, manifest_data)
+                fill_manifest_fields(page, record)
             except Exception as e:
                 print("Could not setup manifest for supplier:", supplier_name, e)
         context.storage_state(path="session.json")
