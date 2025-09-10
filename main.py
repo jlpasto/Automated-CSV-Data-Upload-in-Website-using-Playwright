@@ -5,21 +5,39 @@ import json
 import csv
 from dotenv import load_dotenv
 import os
+import pandas as pd
 
 load_dotenv()
 BASE_URL = "https://hermes.touramigo.com"
 USERNAME = os.getenv("USERNAME")
 PASSWORD = os.getenv("PASSWORD")
-CSV_FILE_PATH = "your_suppliers.csv"  # Update with your CSV file name
+CSV_FILE_PATH = "test.xlsx"  # Update with your CSV/Excel file name
+
+def parse_file_to_json_list(file_path):
+    ext = os.path.splitext(file_path)[1].lower()
+    if ext == ".csv":
+        return csv_to_json_list(file_path)
+    elif ext in [".xls", ".xlsx"]:
+        df = pd.read_excel(file_path)
+        # Output the items as a JSON file
+        df.to_json("output.json", orient="records", force_ascii=False, indent=2)
+        return df.fillna("").to_dict(orient="records")
+    else:
+        raise ValueError("Unsupported file extension. Only .csv, .xls, .xlsx are allowed.")
 
 def csv_to_json_list(csv_file_path):
     """
     Reads a CSV file and returns a list of dictionaries,
     where each dictionary represents a row with column names as keys.
     """
-    with open(csv_file_path, mode='r', encoding='utf-8-sig', newline='') as csvfile:
+    with open(csv_file_path, mode='r', encoding='utf-8', newline='') as csvfile:
         reader = csv.DictReader(csvfile)
         items = [dict(row) for row in reader]
+
+        # Output the items as a JSON file
+        with open("output.json", "w", encoding="utf-8") as jsonfile:
+            json.dump(items, jsonfile, ensure_ascii=False, indent=2)
+      
     return items
 
 def login(context, page):
@@ -351,16 +369,20 @@ def fill_supplier_form(page, record):
     page.check(f"input[name='tax_status'][value='{gst_status_value}']")
 
 
+    due_days_value = record.get("Due Days", "")
+    due_days_value = str(due_days_value).strip() or "0"
+    page.fill("input[name='due_days']", due_days_value)
+
+
     # Mapping for "When" radio buttons
     due_days_when_map = {
         "Not Set": "None",
         "Before": "Before",
         "After": "After"
     }
-    page.fill("input[name='due_days']", record.get("Due Days", "0"))
-
-    due_days_when_label = record.get("Due Days When", "Not Set")
-    due_days_when_value = due_days_when_map.get(due_days_when_label, "None")
+    due_days_when_label = record.get("Due Days When", "").strip() or "Not Set"
+    due_days_when_value = str(due_days_when_map.get(due_days_when_label, "None")) or "None"
+    print("Due Days When Value:", due_days_when_value)  # Debugging line
     page.check(f"input[name='due_days_when'][value='{due_days_when_value}']")
 
 
@@ -371,8 +393,9 @@ def fill_supplier_form(page, record):
         "Start of Tour": "TourStart",
         "End of Tour": "TourEnd"
     }
-    due_days_date_option_label = record.get("Due Days Date Option", "Not Set")
-    due_days_date_option_value = due_days_date_option_map.get(due_days_date_option_label, "None")
+    due_days_date_option_label = record.get("Due Days Date Option", "").strip() or "Not Set"
+    due_days_date_option_value = str(due_days_date_option_map.get(due_days_date_option_label, "None")) or "None"
+    print("Due Days Date Option Value:", due_days_date_option_value)  # Debugging line
     page.check(f"input[name='due_days_date_option'][value='{due_days_date_option_value}']")
     
     # Handle "Exact Day" checkbox based on "Exact Day" field
@@ -395,28 +418,30 @@ def fill_supplier_form(page, record):
 
 
     # Address fields
-    page.fill("input[name='address_1']", record.get("Address 1", ""))
-    page.fill("input[name='address_2']", record.get("Address 2", ""))
-    page.fill("input[name='address_3']", record.get("Address 3", ""))
-    page.fill("input[name='city']", record.get("City", ""))
-    page.fill("input[name='zip_code']", record.get("Zip Code", ""))
-    page.fill("input[name='region']", record.get("State/Province/Region", ""))
+    page.fill("input[name='address_1']", str(record.get("Address 1", "")))
+    page.fill("input[name='address_2']", str(record.get("Address 2", "")))
+    page.fill("input[name='address_3']", str(record.get("Address 3", "")))
+    page.fill("input[name='city']", str(record.get("City", "")))
+    page.fill("input[name='zip_code']", str(record.get("Zip Code", "")))
+    page.fill("input[name='region']", str(record.get("State/Province/Region", "")))
 
-
+    # Country selection
     country_label = record.get("Country", "Australia").strip()
     country_value = country_map.get(country_label, "01797f27ff67abb13b970b9ce8a941a8")  # Default to Australia
     page.select_option("select[name='country_id']", value=country_value)
     
    
     page.fill("input[name='email']", record.get("Email", ""))
-    page.fill("input[name='office_phone_1']", record.get("Office Phone 1", ""))
-    page.fill("input[name='office_phone_2']", record.get("Office Phone 2", ""))
+    page.fill("input[name='office_phone_1']", str(record.get("Office Phone 1", "")))
+    page.fill("input[name='office_phone_2']", str(record.get("Office Phone 2", "")))
     page.fill("input[name='website_url']", record.get("Website URL", "https://tourdevines.com.au/"))
 
     # Add more mappings as needed
     page.click("button[name='_submit']")
     page.wait_for_load_state("networkidle")
     print(f"Submitted supplier: {record.get('Name', '')}")
+
+    time.sleep(2) #  Wait for 5 seconds to ensure processing
 
 def fill_manifest_fields(page, manifest_data):
     manifest_fields = {
@@ -455,10 +480,11 @@ def fill_manifest_fields(page, manifest_data):
                 print(f"Could not toggle '{label}':", e)
     page.click("button[name='_submit']")
     page.wait_for_load_state("networkidle")
+    time.sleep(2)  # Wait for 2 minutes to ensure processing
     print("Clicked 'Save Configuration' button and submitted manifest setup.")
 
 def main():
-    records = csv_to_json_list(CSV_FILE_PATH)
+    records = parse_file_to_json_list(CSV_FILE_PATH)
  
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=False, slow_mo=1000)
