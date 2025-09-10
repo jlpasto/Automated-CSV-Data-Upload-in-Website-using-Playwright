@@ -4,8 +4,12 @@ FROM python:3.11-slim
 # Set the working directory
 WORKDIR /app
 
+# Update the apt package list first
+RUN apt-get update
+
 # Install system dependencies required by Playwright
-RUN apt-get update && apt-get install -y \
+# If you get the same error, try removing some of the packages from this list
+RUN apt-get install -y \
     libnss3 \
     libx11-6 \
     libxcomposite1 \
