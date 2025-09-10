@@ -11,7 +11,7 @@ load_dotenv()
 BASE_URL = "https://hermes.touramigo.com"
 USERNAME = os.getenv("USERNAME")
 PASSWORD = os.getenv("PASSWORD")
-CSV_FILE_PATH = "test.xlsx"  # Update with your CSV/Excel file name
+CSV_FILE_PATH = "test.csv"  # Update with your CSV/Excel file name
 
 def parse_file_to_json_list(file_path):
     ext = os.path.splitext(file_path)[1].lower()
