@@ -213,7 +213,7 @@ async def upload_file(file: UploadFile):
         print(f"Parsed {len(records)} records from the file.")  # Debugging line
 
         async with async_playwright() as p:
-            browser = await p.chromium.launch(headless=False)
+            browser = await p.chromium.launch(headless=True)
             try:
                 context = await browser.new_context(storage_state="session.json")
             except Exception:
