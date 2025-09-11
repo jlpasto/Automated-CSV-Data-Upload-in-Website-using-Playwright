@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 import os
 import pandas as pd
 from datetime import datetime
+import re
 
 load_dotenv()
 BASE_URL = "https://hermes.touramigo.com"
@@ -367,6 +368,11 @@ country_map = {
     "Zimbabwe": "01797f27ff6af8474bb516bbd4353c98"
 }
 
+# Simple email validation function
+def is_valid_email(email):
+    # Basic regex to check format like example@domain.com
+    return bool(re.match(r"[^@]+@[^@]+\.[^@]+", email))
+
 def fill_supplier_form(page, record, error_fields):
     page.goto(f"{BASE_URL}/partneradmin/suppliers/add")
     # Map CSV columns to form fields
@@ -460,8 +466,21 @@ def fill_supplier_form(page, record, error_fields):
     page.select_option("select[name='country_id']", value=country_value)
     
    
-    page.fill("input[name='email']", record.get("Email", ""))
+    # page.fill("input[name='email']", record.get("Email", ""))
 
+    # Get email from record
+    email = record.get("Email", "").strip()
+
+    if is_valid_email(email):
+        page.fill("input[name='email']", email)
+        print(f"Using provided email: {email}")
+    else:
+        fallback_email = ""  # you can change this
+        page.fill("input[name='email']", fallback_email)
+        print(f"Invalid or empty email provided, using fallback: {fallback_email}")
+        # add email to error fields if original value exists
+        if email != "":
+            error_fields.append("email")
 
 
     page.fill("input[name='office_phone_1']", str(record.get("Office Phone 1", "")))
@@ -485,7 +504,7 @@ def fill_supplier_form(page, record, error_fields):
     page.wait_for_load_state("networkidle")
     print(f"Submitted supplier: {record.get('Name', '')}")
 
-    time.sleep(10) #  Wait for 5 seconds to ensure processing
+    time.sleep(4) #  Wait for 5 seconds to ensure processing
 
     return error_fields
 
@@ -598,11 +617,12 @@ def main():
 
                         # Locate the parent
                         parent = page.locator("#formgroup_name")
-                        parent.wait_for(state="attached", timeout=3000)  # wait max 3s
+                        parent.wait_for(state="attached", timeout=2000)  # wait max 3s
                         print("✅ Parent found")
 
                         # Check if it has at least one matching child
-                        has_invalid = parent.locator(".invalid-feedback.invalid-name").count() > 0
+                        has_invalid = parent.locator(".invalid-feedback.invalid-name", has_text="Supplier names must be unique.").count() > 0
+
 
                         if has_invalid:
                             print("❌  Supplier names must be unique.")
@@ -625,11 +645,11 @@ def main():
 
                         # Locate the parent
                         parent = page.locator("#formgroup_office_phone_1")
-                        parent.wait_for(state="attached", timeout=3000)  # wait max 3s
+                        parent.wait_for(state="attached", timeout=2000)  # wait max 3s
                         print("✅ Parent found")
 
                         # Check if it has at least one matching child
-                        has_invalid = parent.locator(".invalid-feedback.invalid-office_phone_1").count() > 0
+                        has_invalid = parent.locator(".invalid-feedback.invalid-office_phone_1", has_text="That does not appear to be a valid").count() > 0
 
                         if has_invalid:
                             print("❌ Invalid phone number feedback is present")
@@ -648,11 +668,11 @@ def main():
 
                         # Locate the parent
                         parent = page.locator("#formgroup_office_phone_2")
-                        parent.wait_for(state="attached", timeout=3000)  # wait max 3s
+                        parent.wait_for(state="attached", timeout=2000)  # wait max 3s
                         print("✅ Parent found")
 
                         # Check if it has at least one matching child
-                        has_invalid = parent.locator(".invalid-feedback.invalid-office_phone_2").count() > 0
+                        has_invalid = parent.locator(".invalid-feedback.invalid-office_phone_2", has_text="That does not appear to be a valid").count() > 0
 
                         if has_invalid:
                             print("❌ Invalid phone number feedback is present")
@@ -691,6 +711,8 @@ def main():
                     
                     try:
                         passenger_list_link = page.locator('a:has-text("Passenger List Setup")').first
+                        passenger_list_link.wait_for(state="attached", timeout=2000)  # wait max 3s
+
                         if not passenger_list_link:
                             print("No 'Passenger List Setup' link found for supplier:", supplier_name)
                             log_record_status(log_filepath, supplier_name, "Failed", "No 'Passenger List Setup' link found")
@@ -700,6 +722,8 @@ def main():
                         page.goto(manifest_setup_url)
                         page.wait_for_load_state("networkidle")
                         page.click("button#select-all")
+
+
                         fill_manifest_fields(page, record)
                         
                         # If we reach here, everything was successful

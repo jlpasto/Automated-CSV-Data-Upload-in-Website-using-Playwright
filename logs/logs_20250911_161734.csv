@@ -1,3 +1,0 @@
-Supplier Name,Status,Timestamp,Error Message
-TestJL4,Failed,2025-09-11 16:17:50,Error: Supplier name must be unique.
-TestJL5,Success,2025-09-11 16:18:11,"Error fields found and replaced with blank: website_url, email, website_url, office_phone_1"

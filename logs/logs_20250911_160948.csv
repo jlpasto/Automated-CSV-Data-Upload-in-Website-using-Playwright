@@ -1,6 +1,0 @@
-Supplier Name,Status,Timestamp,Error Message
-TestJL4,Success,2025-09-11 16:10:23,"Error fields found and replaced with blank: website_url, office_phone_1"
-TestJL5,Failed,2025-09-11 16:11:15,"Manifest setup failed: Locator.get_attribute: Timeout 30000ms exceeded.
-Call log:
-  - waiting for locator(""a:has-text(\""Passenger List Setup\"")"").first
-"
