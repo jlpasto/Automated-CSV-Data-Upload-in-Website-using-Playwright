@@ -8,37 +8,25 @@ WORKDIR /app
 RUN apt-get update
 
 # Install system dependencies required by Playwright
-# If you get the same error, try removing some of the packages from this list
-RUN apt-get install -y \
+RUN apt-get update && apt-get install -y \
     libnss3 \
-    libx11-6 \
-    libxcomposite1 \
-    libxcursor1 \
-    libxdamage1 \
-    libxext6 \
-    libxfixes3 \
-    libxi6 \
-    libxrandr2 \
-    libxtst6 \
-    libasound2 \
+    libatk1.0-0 \
     libatk-bridge2.0-0 \
-    libgtk-3-0 \
     libcups2 \
-    libxkbcommon0 \
-    libxcb1 \
+    libdrm2 \
     libdbus-1-3 \
-    libgdk-pixbuf2.0-0 \
-    libfontconfig1 \
-    libfreetype6 \
-    libjpeg-turbo8 \
-    libpng16-16 \
-    libwebp6 \
-    libwebpdemux2 \
-    libwebp-dev \
-    libwoff1 \
-    libharfbuzz0b \
-    libvulkan1 \
-    --no-install-recommends \
+    libxkbcommon0 \ 
+    libxcomposite1 \
+    libxdamage1 \
+    libxfixes3 \
+    libxrandr2 \
+    libgbm1 \
+    libpango-1.0-0 \
+    libcairo2 \
+    libasound2 \
+    libatspi2.0-0 \
+    wget \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements.txt and install Python dependencies
