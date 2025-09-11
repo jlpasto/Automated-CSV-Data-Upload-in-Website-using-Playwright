@@ -1,0 +1,6 @@
+Supplier Name,Status,Timestamp,Error Message
+TestJL4,Failed,2025-09-11 16:14:28,Error: Supplier name must be unique.
+TestJL5,Failed,2025-09-11 16:14:46,"Manifest setup failed: Locator.wait_for: Timeout 2000ms exceeded.
+Call log:
+  - waiting for locator(""a:has-text(\""Passenger List Setup\"")"").first
+"

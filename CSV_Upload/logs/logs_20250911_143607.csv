@@ -1,0 +1,2 @@
+Supplier Name,Status,Timestamp,Error Message
+Haus Restaurant,Failed,2025-09-11 14:36:30,Error: Supplier name must be unique.

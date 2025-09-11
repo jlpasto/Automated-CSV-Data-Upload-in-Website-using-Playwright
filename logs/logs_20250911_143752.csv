@@ -1,0 +1,3 @@
+Supplier Name,Status,Timestamp,Error Message
+Haus Restaurant,Failed,2025-09-11 14:38:14,Error: Supplier name must be unique.
+Haus Restaurant,Success,2025-09-11 14:38:24,"Error fields found and replaced with blank: website_url, office_phone_1, office_phone_2"

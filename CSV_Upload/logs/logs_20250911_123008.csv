@@ -1,0 +1,26 @@
+Supplier Name,Status,Timestamp,Error Message
+Georges on Waymouth Restaurant,Success,2025-09-11 12:30:38,
+Giant Wollongong Bike Hire,Success,2025-09-11 12:31:05,
+Grand Hotel Esk,Success,2025-09-11 12:31:28,
+Grant St Grocer,Failed,2025-09-11 12:32:16,"Manifest setup failed: Locator.get_attribute: Timeout 30000ms exceeded.
+Call log:
+  - waiting for locator(""a:has-text(\""Passenger List Setup\"")"").first
+"
+Grape Escape,Success,2025-09-11 12:32:39,
+Great Southern Ride,Failed,2025-09-11 12:33:28,"Manifest setup failed: Locator.get_attribute: Timeout 30000ms exceeded.
+Call log:
+  - waiting for locator(""a:has-text(\""Passenger List Setup\"")"").first
+"
+Guerney's Cidery,Failed,2025-09-11 12:34:16,"Manifest setup failed: Locator.get_attribute: Timeout 30000ms exceeded.
+Call log:
+  - waiting for locator(""a:has-text(\""Passenger List Setup\"")"").first
+"
+Hadleys Orient Hotel,Success,2025-09-11 12:34:40,
+Haus Restaurant,Failed,2025-09-11 12:35:29,"Manifest setup failed: Locator.get_attribute: Timeout 30000ms exceeded.
+Call log:
+  - waiting for locator(""a:has-text(\""Passenger List Setup\"")"").first
+"
+Haus Studios,Success,2025-09-11 12:35:53,
+,Success,2025-09-11 12:36:18,
+,Success,2025-09-11 12:36:43,
+,Success,2025-09-11 12:37:10,

@@ -1,0 +1,5 @@
+Supplier Name,Status,Timestamp,Error Message
+Test Supplier 1,Success,2025-09-11 12:29:16,
+Test Supplier 2,Failed,2025-09-11 12:29:16,Connection timeout
+Test Supplier 3,Success,2025-09-11 12:29:16,
+Test Supplier 4,Failed,2025-09-11 12:29:16,Invalid data format
