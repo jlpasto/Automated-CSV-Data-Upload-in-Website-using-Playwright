@@ -11,7 +11,7 @@ load_dotenv()
 BASE_URL = "https://hermes.touramigo.com"
 USERNAME = os.getenv("USERNAME")
 PASSWORD = os.getenv("PASSWORD")
-CSV_FILE_PATH = "test.csv"  # Update with your CSV/Excel file name
+
 
 def parse_file_to_json_list(file_path):
     ext = os.path.splitext(file_path)[1].lower()
@@ -484,6 +484,19 @@ def fill_manifest_fields(page, manifest_data):
     print("Clicked 'Save Configuration' button and submitted manifest setup.")
 
 def main():
+
+    # Path to the folder containing the CSV
+    csv_folder = os.path.join(os.path.dirname(__file__), "csv")
+
+    # Get the first file in the folder
+    csv_files = [f for f in os.listdir(csv_folder) if f.endswith(".csv")]
+
+    if not csv_files:
+        raise FileNotFoundError("No CSV file found in the 'csv' folder.")
+
+    #CSV_FILE_PATH = "test.csv"  # Update with your CSV/Excel file name
+    CSV_FILE_PATH = os.path.join(csv_folder, csv_files[0])
+
     records = parse_file_to_json_list(CSV_FILE_PATH)
  
     with sync_playwright() as p:
