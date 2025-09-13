@@ -417,7 +417,7 @@ def fill_supplier_form(page, record, error_fields):
     }
     due_days_when_label = record.get("Due Days When", "").strip() or "Not Set"
     due_days_when_value = str(due_days_when_map.get(due_days_when_label, "None")) or "None"
-    print("Due Days When Value:", due_days_when_value)  # Debugging line
+    #print("Due Days When Value:", due_days_when_value)  # Debugging line
     page.check(f"input[name='due_days_when'][value='{due_days_when_value}']")
 
 
@@ -430,7 +430,7 @@ def fill_supplier_form(page, record, error_fields):
     }
     due_days_date_option_label = record.get("Due Days Date Option", "").strip() or "Not Set"
     due_days_date_option_value = str(due_days_date_option_map.get(due_days_date_option_label, "None")) or "None"
-    print("Due Days Date Option Value:", due_days_date_option_value)  # Debugging line
+    #print("Due Days Date Option Value:", due_days_date_option_value)  # Debugging line
     page.check(f"input[name='due_days_date_option'][value='{due_days_date_option_value}']")
     
     # Handle "Exact Day" checkbox based on "Exact Day" field
@@ -473,11 +473,11 @@ def fill_supplier_form(page, record, error_fields):
 
     if is_valid_email(email):
         page.fill("input[name='email']", email)
-        print(f"Using provided email: {email}")
+        #print(f"Using provided email: {email}")
     else:
         fallback_email = ""  # you can change this
         page.fill("input[name='email']", fallback_email)
-        print(f"Invalid or empty email provided, using fallback: {fallback_email}")
+        #print(f"Invalid or empty email provided, using fallback: {fallback_email}")
         # add email to error fields if original value exists
         if email != "":
             error_fields.append("email")
@@ -490,11 +490,11 @@ def fill_supplier_form(page, record, error_fields):
     website_url = record.get("Website URL", "").strip()
     if is_valid_url(website_url):
         page.fill("input[name='website_url']", website_url)
-        print(f"Using provided website URL: {website_url}")
+        #print(f"Using provided website URL: {website_url}")
     else:
         fallback_url = "https://tourdevines.com.au/"
         page.fill("input[name='website_url']", fallback_url)
-        print(f"Invalid or empty website URL provided, using fallback: {fallback_url}")
+        #print(f"Invalid or empty website URL provided, using fallback: {fallback_url}")
         # add website utl to error fields
         if website_url != "":
             error_fields.append("website_url")
@@ -502,10 +502,24 @@ def fill_supplier_form(page, record, error_fields):
     # Add more mappings as needed
     page.click("button[name='_submit']")
     page.wait_for_load_state("networkidle")
-    print(f"Submitted supplier: {record.get('Name', '')}")
+    time.sleep(5) #  Wait for 5 seconds to ensure processing
 
-    time.sleep(4) #  Wait for 5 seconds to ensure processing
+    # if submiteed successfully, return error fields as none
+    try:
 
+        success_element = page.locator("div.alert.alert-success", has_text="The new item has been added successfully.")
+        success_element.wait_for(state="attached", timeout=2000)  # wait max 3s
+        print(f"Submitted supplier: {record.get('Name', '')}")
+
+        if success_element.is_visible():
+            pass
+            #print("✅ Success message found!")
+        else:
+            pass
+            #print("❌ Success message not found.")
+    except Exception as e:
+        #print("❌ Could not verify success message:", e)
+        return error_fields
     return error_fields
 
 def fill_manifest_fields(page, manifest_data):
@@ -540,13 +554,16 @@ def fill_manifest_fields(page, manifest_data):
                 checkbox = page.locator(f"input[name='{field_name}']")
                 if not checkbox.is_checked():
                     checkbox.check()
-                print(f"Toggled '{label}' ON.")
+                #print(f"Toggled '{label}' ON.")
             except Exception as e:
-                print(f"Could not toggle '{label}':", e)
+                
+                #print(f"Could not toggle '{label}':", e)
+                return False
     page.click("button[name='_submit']")
     page.wait_for_load_state("networkidle")
-    time.sleep(2)  # Wait for 2 minutes to ensure processing
+    time.sleep(6)  # Wait for 2 minutes to ensure processing
     print("Clicked 'Save Configuration' button and submitted manifest setup.")
+    return True
 
 def initialize_log_file():
     """Initialize the log CSV file with headers"""
@@ -606,7 +623,7 @@ def main():
         
         for record in records:
             supplier_name = record.get("Name", "")
-
+            name_exists = False
             if supplier_name != "" or supplier_name != "None":
                 try:
                     # Process supplier form
@@ -618,26 +635,22 @@ def main():
                         # Locate the parent
                         parent = page.locator("#formgroup_name")
                         parent.wait_for(state="attached", timeout=2000)  # wait max 3s
-                        print("✅ Parent found")
+                        #print("✅ Parent found")
 
                         # Check if it has at least one matching child
                         has_invalid = parent.locator(".invalid-feedback.invalid-name", has_text="Supplier names must be unique.").count() > 0
 
 
                         if has_invalid:
-                            print("❌  Supplier names must be unique.")
+                            #print("❌  Supplier names must be unique.")
+                            name_exists = True
                             # log the error
-                            log_record_status(log_filepath, supplier_name, "Failed", "Error: Supplier name must be unique.")
+                            log_record_status(log_filepath, supplier_name, "Failed", "Message: Supplier details already exist")
                             # go to next record
-                            continue
-                          
-                            
-
-                        else:
-                            print("✅ No invalid feedback under formgroup_name")
+                            #continue
 
                     except Exception as e:
-                        print("✅ No error checking name feedback")
+                        print("✅ No error checking in name field")
 
 
 
@@ -646,108 +659,167 @@ def main():
                         # Locate the parent
                         parent = page.locator("#formgroup_office_phone_1")
                         parent.wait_for(state="attached", timeout=2000)  # wait max 3s
-                        print("✅ Parent found")
+                        #print("✅ Parent found")
 
                         # Check if it has at least one matching child
                         has_invalid = parent.locator(".invalid-feedback.invalid-office_phone_1", has_text="That does not appear to be a valid").count() > 0
 
                         if has_invalid:
-                            print("❌ Invalid phone number feedback is present")
+                            #print("❌ Invalid phone number feedback is present")
                             # fill the phone number with blank
                             page.fill("input[name='office_phone_1']", "")
                             # add office_phone_1 to array missing_fields
                             error_fields.append("office_phone_1")
 
                         else:
-                            print("✅ No invalid feedback under formgroup_office_phone_1")
+                            pass
+                            #print("✅ No invalid feedback under formgroup_office_phone_1")
 
                     except Exception as e:
-                        print("✅ No error checking phone number feedback")
+                        print("Exception checking phone number1 feedback:", e)
 
                     try:
 
                         # Locate the parent
                         parent = page.locator("#formgroup_office_phone_2")
                         parent.wait_for(state="attached", timeout=2000)  # wait max 3s
-                        print("✅ Parent found")
+                        #print("✅ Parent found")
 
                         # Check if it has at least one matching child
                         has_invalid = parent.locator(".invalid-feedback.invalid-office_phone_2", has_text="That does not appear to be a valid").count() > 0
 
                         if has_invalid:
-                            print("❌ Invalid phone number feedback is present")
+                            #print("❌ Invalid phone number feedback is present")
                             # fill the phone number with blank
                             page.fill("input[name='office_phone_2']", "")
                             # add office_phone_2 to array missing_fields
                             error_fields.append("office_phone_2")
 
                         else:
-                            print("✅ No invalid feedback under formgroup_office_phone_2")
+                            pass
+                            #print("✅ No invalid feedback under formgroup_office_phone_2")
 
                     except Exception as e:
-                        print("✅ No error checking phone number feedback")
-
-                    time.sleep(2)
-
+                        print("Exception checking phone number1 feedback:", e)
+                   
                     # check if has an error
-                    if len(error_fields) > 0:
-                        print("❌ Error fields found: Resubmiting form with blank values for error fields")
-                        
+                  
+                    if len(error_fields) > 0 and not name_exists:
+                        # retry submission
+                        #print(f"Retrying to Submit supplier: {record.get('Name', '')}")
                         page.click("button[name='_submit']")
                         page.wait_for_load_state("networkidle")
-                        time.sleep(2)  # Wait for 2 minutes to ensure processing
-                        print("Clicked 'Save Configuration' button and submitted manifest setup.")
-                    else:
-                        print("✅ No error fields found")
-                        log_record_status(log_filepath, supplier_name, "Success", "No error fields found")
-                       
+                        time.sleep(5)  # Wait for 5secs to ensure processing
+
+                        # if submiteed successfully, 
+                        try:
+
+                            success_element = page.locator("div.alert.alert-success", has_text="The new item has been added successfully.")
+                            success_element.wait_for(state="attached", timeout=2000)  # wait max 3s
+
+                            if success_element.is_visible():
+                                #print("✅ Success message found!")
+                                log_record_status(log_filepath, supplier_name, "Success", "Supplier Details Added. No error fields found")
+                            else:
+                                #print("❌ Success message not found.")
+                                log_record_status(log_filepath, supplier_name, "Failed", "Supplier Details not added. Error fields: " + ", ".join(error_fields))
+
+                                error_fields = []
+                                continue
+
+                        except Exception as e:
+                            print("Could not find success message after resubmission:", e)
+                            log_record_status(log_filepath, supplier_name, "Failed", "Supplier Details not added. Error fields: " + ", ".join(error_fields))
+                            error_fields = []
+                            continue
                         
 
+
+                    else:
+                        print("✅ No error fields found")
+                        
+                       
+
                     # After supplier is added, go to search page and setup manifest
+                    print(f"Setting up passenger for supplier: {supplier_name}")
                     supplier_name_query = quote_plus(supplier_name)
                     search_url = f"{BASE_URL}/partneradmin/suppliers?name={supplier_name_query}&_submit=Search"
                     page.goto(search_url)
                     page.wait_for_load_state("networkidle")
-                    
+
+                    first_row_name = ""
+                    if page.locator("#twdatatable").count() > 0:
+                        #print("✅ Table exists")
+
+                        # Get the first row's Name column (2nd <td>)
+                        first_row_name = page.locator("#twdatatable tbody tr:first-child td:nth-child(2) a").inner_text()
+                        #print("First row Name:", first_row_name)
+
+                    else:
+                        #print("❌ Table not found")
+                        error_fields = []
+                        continue
+
+
+
                     try:
                         passenger_list_link = page.locator('a:has-text("Passenger List Setup")').first
-                        passenger_list_link.wait_for(state="attached", timeout=2000)  # wait max 3s
+                        passenger_list_link.wait_for(state="attached", timeout=5000)  # wait max 3s
 
                         if not passenger_list_link:
-                            print("No 'Passenger List Setup' link found for supplier:", supplier_name)
-                            log_record_status(log_filepath, supplier_name, "Failed", "No 'Passenger List Setup' link found")
+                            #print("No 'Passenger List Setup' link found for supplier:", supplier_name)
+                            log_record_status(log_filepath, supplier_name, "Failed", "Passenger details not updated")
+                            error_fields = []
                             continue
-                        passenger_list_link_href = passenger_list_link.get_attribute("href")
-                        manifest_setup_url = f"{BASE_URL}{passenger_list_link_href}"
-                        page.goto(manifest_setup_url)
-                        page.wait_for_load_state("networkidle")
-                        page.click("button#select-all")
-
-
-                        fill_manifest_fields(page, record)
-                        
-                        # If we reach here, everything was successful
-                        # add error fields to log
-                        if len(error_fields) > 0:
-                            log_record_status(log_filepath, supplier_name, "Success", "Error fields found and replaced with blank: " + ", ".join(error_fields))
                         else:
-                            log_record_status(log_filepath, supplier_name, "Success")
-                        error_fields = []
+                            #print("'Passenger List Setup' link found.")
+                            if first_row_name != supplier_name:
+                                #print(f"Supplier name mismatch. Expected: {supplier_name}, Found: {first_row_name}")
+                                log_record_status(log_filepath, supplier_name, "Failed", "Supplier name mismatch after search")
+                                error_fields = []
+                                continue
+                            else:
+                                #print("Supplier name matches the search result.")
+                                passenger_list_link_href = passenger_list_link.get_attribute("href")
+                                manifest_setup_url = f"{BASE_URL}{passenger_list_link_href}"
+                                page.goto(manifest_setup_url)
+                                page.wait_for_load_state("networkidle")
+                                page.click("button#select-all")
+
+
+                                if(fill_manifest_fields(page, record)):
+                                    log_record_status(log_filepath, supplier_name, "Success", "Passsenger details updated successfully")
+                                    #<div class="alert alert-success" role="alert">Manifest configuration was saved successfully.</div>
+                                    if page.locator("div.alert.alert-success", has_text="Manifest configuration was saved successfully.").is_visible():
+                                        pass
+                                        #print("✅ Manifest setup success message found!")
+                                        #log_record_status(log_filepath, supplier_name, "Success", "Passsenger details updated successfully")
+                                        print(f"Manifest setup successful for supplier: {supplier_name}")
+                                    else:
+                                        pass
+                                        #print("❌ Manifest setup success message not found.")
+                                        #log_record_status(log_filepath, supplier_name, "Failed", "Passenger details not updated")
+                                        #print(f"Manifest setup may have failed for supplier: {supplier_name}")
+                                else:
+                                    print(f"Manifest setup encountered issues for supplier: {supplier_name}")
+                                    log_record_status(log_filepath, supplier_name, "Failed", "Passenger details not updated")
+                                
+                                error_fields = []
                        
                         
                     except Exception as e:
                         error_msg = f"Manifest setup failed: {str(e)}"
-                        print("Could not setup manifest for supplier:", supplier_name, e)
-                        log_record_status(log_filepath, supplier_name, "Failed", error_msg)
+                        #print("Could not setup manifest for supplier:", supplier_name, e)
+                        log_record_status(log_filepath, supplier_name, "Failed", "Passenger details not updated")
                         error_fields = []
                         
                 except Exception as e:
                     error_msg = f"Supplier form processing failed: {str(e)}"
-                    print(f"Failed to process supplier {supplier_name}:", e)
+                    #print(f"Failed to process supplier {supplier_name}:", e)
                     log_record_status(log_filepath, supplier_name, "Failed", error_msg)
                     error_fields = []
             else:
-                print(f"Supplier name is empty or None for record: {record}")
+                #(f"Supplier name is empty or None for record: {record}")
                 log_record_status(log_filepath, supplier_name, "Failed", "Supplier name is empty or None")
                 error_fields = []
                 continue

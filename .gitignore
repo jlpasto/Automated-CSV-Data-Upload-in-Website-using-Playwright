@@ -4,6 +4,7 @@
 /session.json
 /venv
 /venv311
+/logs
 .env
 __pycache__/
 *.pyc
